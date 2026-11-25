@@ -1,0 +1,27 @@
+{
+  "name": "support-refunds-service",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "description": "Example customer support agent with a refund worker.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "migrate": "node --import tsx scripts/migrate.ts",
+    "seed": "node --import tsx scripts/seed.ts",
+    "api": "node --import tsx src/main.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.700.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
