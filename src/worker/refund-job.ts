@@ -40,7 +40,7 @@ export async function processRefundMessage(deps: WorkerDeps, message: QueueMessa
         const payment = await deps.payments.createRefund({
           refundId: refund.id,
           orderId: refund.orderId,
-          amount: refund.amount,
+          amount: refund.amountCents,
           currency: refund.currency,
         });
         await deps.store.updateRefundStatus(refund.id, "succeeded");

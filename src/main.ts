@@ -2,6 +2,7 @@ import { createApp } from "./api/server.js";
 import { HttpModel } from "./api/agent/http-model.js";
 import { config } from "./config.js";
 import { createPool } from "./db.js";
+import { SqsQueue } from "./queue/sqs.js";
 import { log } from "./logger.js";
 import { PgStore } from "./store/pg.js";
 
@@ -18,7 +19,8 @@ const model = new HttpModel({
   model: process.env.MODEL_NAME ?? "support-agent",
 });
 
-const server = createApp({ store, model });
+const queue = new SqsQueue(config.queue.url);
+const server = createApp({ store, model, queue });
 
 server.listen(config.httpPort, () => {
   log("info", "api listening", { port: config.httpPort });

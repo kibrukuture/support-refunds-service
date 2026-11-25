@@ -1,3 +1,4 @@
+import { FakeQueue } from "../src/fakes/fake-queue.js";
 import { MemoryStore } from "../src/store/memory.js";
 import type { Customer, Order, Refund } from "../src/types.js";
 
@@ -42,7 +43,7 @@ const refunds: Refund[] = [
     id: REFUND_A,
     orderId: ORDER_A,
     customerId: CUSTOMER_A,
-    amount: 4200,
+    amountCents: 4200,
     currency: "usd",
     status: "succeeded",
     reason: "damaged item",
@@ -52,13 +53,23 @@ const refunds: Refund[] = [
     id: REFUND_B,
     orderId: ORDER_B,
     customerId: CUSTOMER_B,
-    amount: 9900,
+    amountCents: 9900,
     currency: "usd",
     status: "pending",
     reason: "changed mind",
     createdAt: "2026-10-04T10:00:00.000Z",
   },
 ];
+
+export interface TestToolContext {
+  readonly customerId: string;
+  readonly store: MemoryStore;
+  readonly queue: FakeQueue;
+}
+
+export function toolContext(customerId: string): TestToolContext {
+  return { customerId, store: makeStore(), queue: new FakeQueue() };
+}
 
 export function makeStore(): MemoryStore {
   return new MemoryStore({

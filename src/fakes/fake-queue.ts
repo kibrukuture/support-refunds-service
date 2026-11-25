@@ -32,6 +32,10 @@ export class FakeQueue implements Queue {
     }
   }
 
+  async send(body: string): Promise<void> {
+    this.enqueue(body);
+  }
+
   enqueue(body: string): string {
     const id = `msg_${(this.messageCounter += 1)}`;
     this.entries.push({

@@ -1,5 +1,5 @@
 import type { ToolDefinition } from "./types.js";
-import { optionalNumber, requireString } from "./types.js";
+import { optionalNumber, optionalString, requireString } from "./types.js";
 
 const DEFAULT_LIMIT = 5;
 const MAX_LIMIT = 20;
@@ -22,7 +22,7 @@ export const checkRefundStatus: ToolDefinition = {
         id: refund.id,
         orderId: refund.orderId,
         status: refund.status,
-        amount: refund.amount,
+        amount: refund.amountCents,
         currency: refund.currency,
         createdAt: refund.createdAt,
       },
@@ -35,17 +35,23 @@ export const listRefunds: ToolDefinition = {
   description: "List recent refunds that belong to the signed-in customer.",
   parameters: {
     limit: { type: "number", description: "How many refunds to return, 1 to 20.", required: false },
+    sort: { type: "string", description: "Sort by created_at or amount.", required: false },
+    direction: { type: "string", description: "Sort direction, asc or desc.", required: false },
   },
   async run({ customerId, store }, input) {
     const requested = optionalNumber(input, "limit") ?? DEFAULT_LIMIT;
     const limit = Math.min(Math.max(Math.trunc(requested), 1), MAX_LIMIT);
-    const refunds = await store.listRefunds(customerId, limit);
+    const refunds = await store.listRefunds(customerId, {
+      sort: optionalString(input, "sort") ?? "created_at",
+      direction: optionalString(input, "direction") ?? "desc",
+      limit,
+    });
     return {
       refunds: refunds.map((refund) => ({
         id: refund.id,
         orderId: refund.orderId,
         status: refund.status,
-        amount: refund.amount,
+        amount: refund.amountCents,
         currency: refund.currency,
         createdAt: refund.createdAt,
       })),

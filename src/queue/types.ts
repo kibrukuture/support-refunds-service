@@ -6,6 +6,7 @@ export interface QueueMessage {
 }
 
 export interface Queue {
+  send(body: string): Promise<void>;
   receive(): Promise<QueueMessage | null>;
   changeVisibility(receiptHandle: string, seconds: number): Promise<void>;
   delete(receiptHandle: string): Promise<void>;

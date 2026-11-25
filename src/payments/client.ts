@@ -16,28 +16,38 @@ interface RefundResponse {
   readonly status: "succeeded" | "pending";
 }
 
+interface RefundPayload {
+  readonly refund_id: string;
+  readonly order_id: string;
+  readonly amount: number;
+  readonly currency: string;
+}
+
 /**
  * Client for the payment provider described in docs/payment-contract.md.
  */
 export class HttpPaymentClient implements PaymentClient {
+  private readonly endpoint: string;
+
   constructor(
-    private readonly baseUrl: string,
+    baseUrl: string,
     private readonly fetchImpl: typeof fetch = fetch,
-  ) {}
+  ) {
+    this.endpoint = `${baseUrl}/v1/refunds`;
+  }
 
   async createRefund(request: RefundRequest): Promise<PaymentResult> {
-    const response = await this.fetchImpl(`${this.baseUrl}/v1/refunds`, {
+    const payload: RefundPayload = {
+      refund_id: request.refundId,
+      order_id: request.orderId,
+      amount: request.amount,
+      currency: request.currency,
+    };
+
+    const response = await this.fetchImpl(this.endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "idempotency-key": idempotencyKeyFor(request.refundId),
-      },
-      body: JSON.stringify({
-        refund_id: request.refundId,
-        order_id: request.orderId,
-        amount: request.amount,
-        currency: request.currency,
-      }),
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(config.payments.timeoutMs),
     });
 
@@ -45,11 +55,10 @@ export class HttpPaymentClient implements PaymentClient {
       throw new PaymentError(`payment provider returned ${response.status}`, response.status);
     }
 
-    const body = (await response.json()) as RefundResponse;
-    return { paymentId: body.id, status: body.status };
+    return toPaymentResult((await response.json()) as RefundResponse);
   }
 }
 
-export function idempotencyKeyFor(refundId: string): string {
-  return `refund-${refundId}`;
+function toPaymentResult(body: RefundResponse): PaymentResult {
+  return { paymentId: body.id, status: body.status };
 }

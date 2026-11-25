@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
 import { log } from "../logger.js";
+import type { Queue } from "../queue/types.js";
 import type { Store } from "../store/types.js";
 import { resolveSession, UnauthorizedError } from "./auth.js";
 import { runAgent } from "./agent/agent.js";
@@ -13,6 +14,7 @@ const MAX_LIMIT = 20;
 export interface AppDeps {
   readonly store: Store;
   readonly model: Model;
+  readonly queue: Queue;
 }
 
 class BadRequestError extends Error {}
@@ -51,14 +53,17 @@ async function handle(deps: AppDeps, request: IncomingMessage, response: ServerR
 
     if (request.method === "GET" && url.pathname === "/refunds") {
       const session = await resolveSession(deps.store, request.headers.authorization);
-      const limit = clampLimit(url.searchParams.get("limit"));
-      const refunds = await deps.store.listRefunds(session.customerId, limit);
+      const refunds = await deps.store.listRefunds(session.customerId, {
+        sort: url.searchParams.get("sort") ?? "created_at",
+        direction: url.searchParams.get("direction") ?? "desc",
+        limit: clampLimit(url.searchParams.get("limit")),
+      });
       sendJson(response, 200, {
         refunds: refunds.map((refund) => ({
           id: refund.id,
           orderId: refund.orderId,
           status: refund.status,
-          amount: refund.amount,
+          amount: refund.amountCents,
           currency: refund.currency,
           createdAt: refund.createdAt,
         })),

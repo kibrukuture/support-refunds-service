@@ -15,7 +15,7 @@ variable "image_tag" {
 
 variable "api_desired_count" {
   type    = number
-  default = 4
+  default = 8
 }
 
 variable "worker_desired_count" {
