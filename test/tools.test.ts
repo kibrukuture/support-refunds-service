@@ -60,6 +60,16 @@ test("listRefunds returns only the session customer's refunds", async () => {
   assert.deepEqual(refunds.map((refund) => refund.id), [REFUND_A]);
 });
 
+test("listRefunds accepts a sort key and direction", async () => {
+  const result = await listRefunds.run(toolContext(CUSTOMER_A), {
+    limit: 20,
+    sort: "amount",
+    direction: "asc",
+  });
+  const refunds = (result as { refunds: { id: string }[] }).refunds;
+  assert.equal(refunds.length, 1);
+});
+
 test("createRefund stores a pending refund and queues a job", async () => {
   const context = toolContext(CUSTOMER_A);
   const result = await createRefund.run(context, {
@@ -73,7 +83,7 @@ test("createRefund stores a pending refund and queues a job", async () => {
   assert.equal(body.refund.status, "pending");
   assert.equal(body.refund.amountCents, 4200);
 
-  const refunds = await context.store.listRefunds(CUSTOMER_A, 10);
+  const refunds = await context.store.listRefunds(CUSTOMER_A, { sort: "created_at", direction: "desc", limit: 10 });
   assert.equal(refunds.length, 2);
   assert.equal(context.queue.pending(), 1);
 });

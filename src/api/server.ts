@@ -53,8 +53,11 @@ async function handle(deps: AppDeps, request: IncomingMessage, response: ServerR
 
     if (request.method === "GET" && url.pathname === "/refunds") {
       const session = await resolveSession(deps.store, request.headers.authorization);
-      const limit = clampLimit(url.searchParams.get("limit"));
-      const refunds = await deps.store.listRefunds(session.customerId, limit);
+      const refunds = await deps.store.listRefunds(session.customerId, {
+        sort: url.searchParams.get("sort") ?? "created_at",
+        direction: url.searchParams.get("direction") ?? "desc",
+        limit: clampLimit(url.searchParams.get("limit")),
+      });
       sendJson(response, 200, {
         refunds: refunds.map((refund) => ({
           id: refund.id,

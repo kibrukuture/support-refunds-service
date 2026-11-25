@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { Currency, Customer, Order, Refund, RefundStatus } from "../types.js";
-import type { CreateRefundInput, Store } from "./types.js";
+import type { CreateRefundInput, RefundQuery, Store } from "./types.js";
 
 interface MemoryData {
   readonly customers?: readonly Customer[];
@@ -63,10 +63,17 @@ export class MemoryStore implements Store {
     return refund;
   }
 
-  async listRefunds(customerId: string, limit: number): Promise<Refund[]> {
+  async listRefunds(customerId: string, query: RefundQuery): Promise<Refund[]> {
+    const sign = query.direction === "asc" ? 1 : -1;
+    const limit = Math.min(Math.max(Math.trunc(query.limit), 1), 50);
+
     return [...this.refunds.values()]
       .filter((refund) => refund.customerId === customerId)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .sort((a, b) => {
+        const left = query.sort === "amount" ? a.amountCents : Date.parse(a.createdAt);
+        const right = query.sort === "amount" ? b.amountCents : Date.parse(b.createdAt);
+        return (left - right) * sign;
+      })
       .slice(0, limit);
   }
 

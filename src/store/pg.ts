@@ -1,7 +1,7 @@
 import type pg from "pg";
 
 import type { Currency, Customer, Order, OrderStatus, Refund, RefundStatus } from "../types.js";
-import type { CreateRefundInput, Store } from "./types.js";
+import type { CreateRefundInput, RefundQuery, Store } from "./types.js";
 
 interface CustomerRow {
   readonly id: string;
@@ -27,6 +27,12 @@ interface RefundRow {
   readonly reason: string;
   readonly created_at: Date;
 }
+
+const REFUND_SORT_COLUMNS: Readonly<Record<string, string>> = {
+  created_at: "created_at",
+  amount: "amount_cents",
+};
+const DEFAULT_SORT_COLUMN = "created_at";
 
 const ORDER_COLUMNS = "id, customer_id, amount, currency, status, created_at";
 const REFUND_COLUMNS = "id, order_id, customer_id, amount_cents, currency, status, reason, created_at";
@@ -87,12 +93,16 @@ export class PgStore implements Store {
     return row ? toRefund(row) : null;
   }
 
-  async listRefunds(customerId: string, limit: number): Promise<Refund[]> {
+  async listRefunds(customerId: string, query: RefundQuery): Promise<Refund[]> {
+    const column = REFUND_SORT_COLUMNS[query.sort] ?? DEFAULT_SORT_COLUMN;
+    const direction = query.direction === "asc" ? "ASC" : "DESC";
+    const limit = Math.min(Math.max(Math.trunc(query.limit), 1), 50);
+
     const result = await this.pool.query<RefundRow>(
       `SELECT ${REFUND_COLUMNS}
          FROM refunds
         WHERE customer_id = $1
-        ORDER BY created_at DESC
+        ORDER BY ${column} ${direction}
         LIMIT $2`,
       [customerId, limit],
     );
