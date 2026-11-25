@@ -24,7 +24,7 @@ export interface Refund {
   readonly orderId: string;
   readonly customerId: string;
   /** Stored in cents. */
-  readonly amount: number;
+  readonly amountCents: number;
   readonly currency: Currency;
   readonly status: RefundStatus;
   readonly reason: string;

@@ -21,7 +21,7 @@ interface RefundRow {
   readonly id: string;
   readonly order_id: string;
   readonly customer_id: string;
-  readonly amount: number;
+  readonly amount_cents: number;
   readonly currency: string;
   readonly status: string;
   readonly reason: string;
@@ -29,7 +29,7 @@ interface RefundRow {
 }
 
 const ORDER_COLUMNS = "id, customer_id, amount, currency, status, created_at";
-const REFUND_COLUMNS = "id, order_id, customer_id, amount, currency, status, reason, created_at";
+const REFUND_COLUMNS = "id, order_id, customer_id, amount_cents, currency, status, reason, created_at";
 
 export class PgStore implements Store {
   constructor(private readonly pool: pg.Pool) {}
@@ -120,7 +120,7 @@ function toRefund(row: RefundRow): Refund {
     id: row.id,
     orderId: row.order_id,
     customerId: row.customer_id,
-    amount: row.amount,
+    amountCents: row.amount_cents,
     currency: row.currency as Currency,
     status: row.status as RefundStatus,
     reason: row.reason,

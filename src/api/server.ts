@@ -58,7 +58,7 @@ async function handle(deps: AppDeps, request: IncomingMessage, response: ServerR
           id: refund.id,
           orderId: refund.orderId,
           status: refund.status,
-          amount: refund.amount,
+          amount: refund.amountCents,
           currency: refund.currency,
           createdAt: refund.createdAt,
         })),
