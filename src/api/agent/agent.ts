@@ -1,3 +1,4 @@
+import type { Queue } from "../../queue/types.js";
 import type { Store } from "../../store/types.js";
 import { log } from "../../logger.js";
 import type { Model, ModelMessage, ToolCall } from "./model.js";
@@ -13,6 +14,7 @@ export interface AgentSession {
 export interface AgentDeps {
   readonly model: Model;
   readonly store: Store;
+  readonly queue: Queue;
 }
 
 export interface AgentResult {
@@ -48,7 +50,10 @@ export async function runAgent(
         result = { error: `unknown tool: ${call.name}` };
       } else {
         try {
-          result = await tool.run({ customerId: session.customerId, store: deps.store }, call.arguments);
+          result = await tool.run(
+            { customerId: session.customerId, store: deps.store, queue: deps.queue },
+            call.arguments,
+          );
         } catch (error) {
           result = { error: error instanceof Error ? error.message : "tool failed" };
         }

@@ -1,9 +1,11 @@
+import type { Queue } from "../../../queue/types.js";
 import type { Store } from "../../../store/types.js";
 import type { ToolSchema } from "../model.js";
 
 export interface ToolContext {
   readonly customerId: string;
   readonly store: Store;
+  readonly queue: Queue;
 }
 
 export interface ToolDefinition {

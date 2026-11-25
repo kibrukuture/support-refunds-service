@@ -1,3 +1,4 @@
+import { FakeQueue } from "../src/fakes/fake-queue.js";
 import { MemoryStore } from "../src/store/memory.js";
 import type { Customer, Order, Refund } from "../src/types.js";
 
@@ -59,6 +60,16 @@ const refunds: Refund[] = [
     createdAt: "2026-10-04T10:00:00.000Z",
   },
 ];
+
+export interface TestToolContext {
+  readonly customerId: string;
+  readonly store: MemoryStore;
+  readonly queue: FakeQueue;
+}
+
+export function toolContext(customerId: string): TestToolContext {
+  return { customerId, store: makeStore(), queue: new FakeQueue() };
+}
 
 export function makeStore(): MemoryStore {
   return new MemoryStore({

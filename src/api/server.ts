@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
 import { log } from "../logger.js";
+import type { Queue } from "../queue/types.js";
 import type { Store } from "../store/types.js";
 import { resolveSession, UnauthorizedError } from "./auth.js";
 import { runAgent } from "./agent/agent.js";
@@ -13,6 +14,7 @@ const MAX_LIMIT = 20;
 export interface AppDeps {
   readonly store: Store;
   readonly model: Model;
+  readonly queue: Queue;
 }
 
 class BadRequestError extends Error {}

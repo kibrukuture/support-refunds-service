@@ -1,7 +1,7 @@
 import type pg from "pg";
 
 import type { Currency, Customer, Order, OrderStatus, Refund, RefundStatus } from "../types.js";
-import type { Store } from "./types.js";
+import type { CreateRefundInput, Store } from "./types.js";
 
 interface CustomerRow {
   readonly id: string;
@@ -97,6 +97,20 @@ export class PgStore implements Store {
       [customerId, limit],
     );
     return result.rows.map(toRefund);
+  }
+
+  async createRefund(input: CreateRefundInput): Promise<Refund> {
+    const result = await this.pool.query<RefundRow>(
+      `INSERT INTO refunds (order_id, customer_id, amount_cents, currency, reason)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING ${REFUND_COLUMNS}`,
+      [input.orderId, input.customerId, input.amountCents, input.currency, input.reason],
+    );
+    const row = result.rows[0];
+    if (row === undefined) {
+      throw new Error("refund insert returned no row");
+    }
+    return toRefund(row);
   }
 
   async updateRefundStatus(refundId: string, status: RefundStatus): Promise<void> {

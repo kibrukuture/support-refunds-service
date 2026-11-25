@@ -3,11 +3,12 @@ import { test } from "node:test";
 import type { AddressInfo } from "node:net";
 
 import { createApp } from "../src/api/server.js";
+import { FakeQueue } from "../src/fakes/fake-queue.js";
 import { ScriptedModel, textReply, toolCall, toolReply } from "../src/fakes/fake-model.js";
 import { SESSION_A, SESSION_B, CUSTOMER_A, ORDER_A, makeStore } from "./fixtures.js";
 
 async function withServer<T>(model: ScriptedModel, run: (baseUrl: string) => Promise<T>): Promise<T> {
-  const server = createApp({ store: makeStore(), model });
+  const server = createApp({ store: makeStore(), model, queue: new FakeQueue() });
   await new Promise<void>((resolve) => server.listen(0, resolve));
   const { port } = server.address() as AddressInfo;
   try {

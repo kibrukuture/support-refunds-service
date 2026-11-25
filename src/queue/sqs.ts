@@ -2,6 +2,7 @@ import {
   ChangeMessageVisibilityCommand,
   DeleteMessageCommand,
   ReceiveMessageCommand,
+  SendMessageCommand,
   SQSClient,
 } from "@aws-sdk/client-sqs";
 
@@ -18,6 +19,15 @@ export class SqsQueue implements Queue {
     private readonly visibilityTimeoutSeconds: number = config.queue.visibilityTimeoutSeconds,
   ) {
     this.client = new SQSClient({});
+  }
+
+  async send(body: string): Promise<void> {
+    await this.client.send(
+      new SendMessageCommand({
+        QueueUrl: this.queueUrl,
+        MessageBody: body,
+      }),
+    );
   }
 
   async receive(): Promise<QueueMessage | null> {

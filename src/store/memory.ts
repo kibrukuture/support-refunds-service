@@ -1,5 +1,7 @@
-import type { Customer, Order, Refund, RefundStatus } from "../types.js";
-import type { Store } from "./types.js";
+import { randomUUID } from "node:crypto";
+
+import type { Currency, Customer, Order, Refund, RefundStatus } from "../types.js";
+import type { CreateRefundInput, Store } from "./types.js";
 
 interface MemoryData {
   readonly customers?: readonly Customer[];
@@ -66,6 +68,21 @@ export class MemoryStore implements Store {
       .filter((refund) => refund.customerId === customerId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, limit);
+  }
+
+  async createRefund(input: CreateRefundInput): Promise<Refund> {
+    const refund: Refund = {
+      id: randomUUID(),
+      orderId: input.orderId,
+      customerId: input.customerId,
+      amountCents: input.amountCents,
+      currency: input.currency as Currency,
+      status: "pending",
+      reason: input.reason,
+      createdAt: new Date().toISOString(),
+    };
+    this.refunds.set(refund.id, refund);
+    return refund;
   }
 
   async updateRefundStatus(refundId: string, status: RefundStatus): Promise<void> {

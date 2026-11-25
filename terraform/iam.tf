@@ -25,6 +25,27 @@ resource "aws_iam_role" "api_task" {
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role.json
 }
 
+resource "aws_iam_policy" "api_sqs" {
+  name        = "${local.name}-api-sqs"
+  description = "Queue access used by the API when it creates refunds"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["sqs:SendMessage"]
+        Resource = aws_sqs_queue.refund_jobs.arn
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "api_sqs" {
+  role       = aws_iam_role.api_task.name
+  policy_arn = aws_iam_policy.api_sqs.arn
+}
+
 resource "aws_iam_role" "worker_task" {
   name               = "${local.name}-worker-task"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role.json
