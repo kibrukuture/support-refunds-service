@@ -64,8 +64,6 @@ resource "aws_iam_policy" "worker_sqs" {
           "sqs:ReceiveMessage",
           "sqs:DeleteMessage",
           "sqs:GetQueueAttributes",
-          "sqs:ChangeMessageVisibility",
-          "sqs:PurgeQueue",
         ]
         Resource = aws_sqs_queue.refund_jobs.arn
       },
